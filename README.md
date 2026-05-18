@@ -4,6 +4,53 @@ Auto-styles Anki cards created via Yomitan to look like Migaku Chinese cards:
 hover-pinyin in the `Sentence` field, plus Mandarin TTS in the `Sentence Audio`
 field — all generated automatically the moment Yomitan sends the card to Anki.
 
+## Why this exists
+
+I read Chinese comics by OCRing them with [YomiNinja](https://github.com/matheusvalverde/YomiNinja),
+looking up unfamiliar words with [Yomitan](https://yomitan.wiki/), and one-clicking
+those words into Anki via [AnkiConnect](https://ankiweb.net/shared/info/2055492159).
+
+Yomitan ships the **word audio** (Forvo) and the raw **sentence text** to Anki,
+but two things I want it can't do on its own:
+
+1. **Hover-pinyin** on every character in the sentence. My note template has the
+   parser embedded (from a legacy Migaku Chinese export), but it requires the
+   sentence to be in `汉字[pinyin;pos]` bracket format, which Yomitan doesn't
+   produce.
+2. **Sentence audio** (not just word audio). HyperTTS does this manually, but
+   doesn't expose any auto-fire hook for AnkiConnect-added notes.
+
+This repo automates both, synchronously, as the card lands in Anki.
+
+## End-to-end flow
+
+```
+YomiNinja (OCR a comic panel)
+  ↓
+Yomitan (look up a word, click "send to Anki")
+  ↓
+AnkiConnect (HTTP) → collection.add_note()
+  ↓
+[hook fires] yomitan_postprocess addon
+  ├─ `say -v Tingting` → afconvert → m4a → Sentence Audio
+  └─ shells out to yomitan_stylized_migaku.py --text "..."
+       └─ jieba.posseg + pypinyin → 汉[pinyin;pos] format → Sentence
+       └─ raw text → Plain Sentence
+  ↓
+Anki saves the fully-populated note
+```
+
+## Example transformation
+
+| Field | Before (what Yomitan sends) | After (what gets saved) |
+|---|---|---|
+| `Sentence` | `我打开了收音机` | `我[wo3;r]打开[da3 kai1;v]了[le5;ul]<t>收音机[shou1 yin1 ji1;n]</t>` |
+| `Plain Sentence` | *(empty)* | `我打开了收音机` |
+| `Sentence Audio` | *(empty)* | `[sound:yomitan_pp_abc123.m4a]` |
+
+The bracket-format `Sentence` triggers the Migaku JS in the card template to
+render hover-pinyin tooltips on every word during review.
+
 ## What's in the box
 
 | Path | Role |

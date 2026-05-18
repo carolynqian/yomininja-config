@@ -1,0 +1,44 @@
+# Progress
+
+Append a new entry at the top each time something material changes.
+
+---
+
+## 2026-05-18 — Initial build
+
+Set up the full Yomitan → bracketized + audio pipeline from scratch after losing the previous machine.
+
+- `yomitan_stylized_migaku.py`: jieba.posseg + pypinyin (Style.TONE3, neutral=5)
+  to produce Migaku `汉[pinyin;pos]` format. Wraps target word in `<t>...</t>`.
+  Two modes: `--text TEXT --target WORD` for live one-shot use, no-args for
+  AnkiConnect backfill across all `[CURRENT] Yomitan` notes tagged `yomitan*`.
+  Idempotent (skips already-bracketized).
+- `yomitan_postprocess` Anki addon: hooks `anki.hooks.note_will_be_added`
+  (fires synchronously for both Add Cards dialog and AnkiConnect — confirmed
+  in Anki's hook docstring). Generates audio via macOS `say -v Tingting` +
+  `afconvert` → m4a, attaches via `col.media.add_file`, shells out to the
+  script to bracketize. Mutates note in-place before DB write — single save.
+  Filters on note type `[CURRENT] Yomitan` AND tag prefix `yomitan` (matches
+  `yomitan`, `yomitan::chinese`, etc.).
+- Addon lives in this repo at `yomitan_postprocess/`; Anki picks it up via a
+  symlink at `~/Library/Application Support/Anki2/addons21/yomitan_postprocess`.
+  Repo is single source of truth.
+- Logs to `/tmp/yomitan_postprocess.log` for debugging.
+
+### Design decisions made along the way
+
+- **Polling vs hook**: First built a 5s QTimer poller because I (wrongly)
+  thought no Anki hook fired for AnkiConnect-added notes. `note_will_be_added`
+  does. Polling deleted in favor of the hook.
+- **HyperTTS**: Initially configured with auto-fire intent, but its "automatic"
+  mapping flag only filters which rules run when the user clicks 🔊 — it does
+  not hook note-add events. Replaced its auto role with the addon; HyperTTS
+  preset kept around as a manual fallback for the editor button.
+- **Migaku Anki add-on**: Considered but ignored — modern Migaku requires a
+  subscription. Card template already has the parser JS embedded inline, so
+  bracket format alone is enough; no add-on needed.
+- **Subprocess vs vendored libs**: Addon shells out to `uv run` instead of
+  vendoring jieba+pypinyin into the addon dir. ~500ms cold-start overhead but
+  single source of truth for bracketize logic, no 10MB of vendored deps.
+- **Audio source**: macOS `say -v Tingting` (the same engine HyperTTS uses
+  when you pick the MacOS Tingting voice). No API key, no network.
