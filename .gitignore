@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 .DS_Store
+# Anki writes this into installed addon dirs at runtime
+yomitan_postprocess/meta.json

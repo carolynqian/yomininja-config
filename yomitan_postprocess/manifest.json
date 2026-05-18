@@ -1,0 +1,8 @@
+{
+    "name": "Yomitan Post-Process",
+    "package": "yomitan_postprocess",
+    "author": "carolynqian",
+    "version": "1.0",
+    "homepage": "",
+    "conflicts": []
+}

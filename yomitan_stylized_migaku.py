@@ -6,7 +6,7 @@
 Convert Yomitan-created Anki cards to Migaku bracket-pinyin format so the
 hover-pinyin in the [CURRENT] Yomitan template lights up.
 
-- Reads `Sentence` from every note tagged `yomitan` in `[CURRENT] Yomitan`.
+- Reads `Sentence` from every `[CURRENT] Yomitan` note tagged `yomitan*`.
 - Segments with jieba.posseg, tones with pypinyin (Style.TONE3 + neutral=5).
 - Rewrites `Sentence` as `汉字[pinyin;pos]`, wrapping the target word in <t>.
 - Copies the raw sentence into `Plain Sentence` so HyperTTS / lookups still work.
@@ -24,7 +24,7 @@ from pypinyin import lazy_pinyin, Style
 
 ANKICONNECT = "http://localhost:8765"
 NOTE_TYPE = "[CURRENT] Yomitan"
-TAG = "yomitan"
+TAG_GLOB = "yomitan*"  # matches yomitan, yomitan::chinese, etc.
 
 CHINESE_RE = re.compile(r"[一-鿿]+")
 
@@ -55,7 +55,7 @@ def to_bracket(sentence: str, target_word: str) -> str:
 
 
 def main():
-    ids = anki("findNotes", query=f'note:"{NOTE_TYPE}" tag:{TAG}')
+    ids = anki("findNotes", query=f'note:"{NOTE_TYPE}" tag:{TAG_GLOB}')
     notes = anki("notesInfo", notes=ids) if ids else []
     converted = skipped = 0
     for n in notes:
