@@ -4,6 +4,26 @@ Append a new entry at the top each time something material changes.
 
 ---
 
+## 2026-05-18 — Public release prep
+
+Cleaned up the repo so it can be flipped to public.
+
+- Rewrote all 3 commits via `git filter-branch` to use the GitHub noreply
+  email (`55215635+carolynqian@users.noreply.github.com`) instead of the
+  Berkeley address that was baked into the original author lines.
+  Author name preserved, contribution graph still credits @carolynqian.
+  Force-pushed; old SHAs are gone from `origin/main` but kept locally
+  under `refs/original/refs/heads/main` as a backup.
+- Set `git config --global user.email` to the noreply form so future
+  commits across all repos default to it. Per-repo override still works
+  for work/uni repos that need a different identity.
+- Added Yomitan settings export under `yomitan_settings/` as a personal
+  restore backup. Committed the 38 KB settings JSON; gitignored the
+  218 MB dictionaries JSON (GitHub blocks files >100 MB anyway, and the
+  dictionaries are public CC-CEDICT / SUBTLEX / HSK / BLCU data
+  reimportable from source). README has a new "Personal backup" section
+  making it clear this is my config, not part of the install.
+
 ## 2026-05-18 — Initial build
 
 Set up the full Yomitan → bracketized + audio pipeline from scratch after losing the previous machine.
