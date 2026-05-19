@@ -1,13 +1,13 @@
 # yomininja-config
 
-Auto-styles Anki cards created via Yomitan to look like Migaku Chinese cards:
-hover-pinyin in the `Sentence` field, plus Mandarin TTS in the `Sentence Audio`
+Auto-styles Anki cards created via Yomitan with stylization for Chinese learning:
+mouse-hover to show pinyin in the `Sentence` field (above sentence text), plus Mandarin TTS in the `Sentence Audio`
 field — all generated automatically the moment Yomitan sends the card to Anki.
 
 ## Why this exists
 
 I read Chinese comics by OCRing them with [YomiNinja](https://github.com/matheusvalverde/YomiNinja),
-looking up unfamiliar words with [Yomitan](https://yomitan.wiki/), and one-clicking
+looking up unfamiliar words with [Yomitan](https://yomitan.wiki/), and adding
 those words into Anki via [AnkiConnect](https://ankiweb.net/shared/info/2055492159).
 
 Yomitan ships the **word audio** (Forvo) and the raw **sentence text** to Anki,
@@ -104,6 +104,22 @@ All paths in `yomitan_postprocess/__init__.py`:
 - `TAG` — change if Yomitan tags cards with something other than `yomitan*`.
 - `VOICE` — any voice from `say -v ?`. Other Mandarin options: `Lilian`, `Sin-ji`.
 - `SCRIPT` is auto-resolved relative to the addon directory via the symlink — no change needed if you cloned to `~/GitRepos/yomininja-config/`.
+
+## Personal backup (not needed to use this project)
+
+The `yomitan_settings/` directory contains an export of my own Yomitan
+extension settings — note type mappings, popup behavior, scan key
+bindings, etc. — that I keep here so I can restore my workflow on a
+fresh machine. It's personal config, not part of the install.
+
+- `yomitan-settings-*.json` — committed, 38 KB.
+- `yomitan-dictionaries-*.json` — gitignored (200+ MB). The dictionaries
+  themselves are public (CC-CEDICT, etc.) and can be re-imported from
+  source any time, so I keep the export only locally.
+
+To restore: open Yomitan → Settings → Backup → Import Settings →
+select the JSON. Then re-import dictionaries from their original
+sources.
 
 ## Troubleshooting
 

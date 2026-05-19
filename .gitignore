@@ -3,3 +3,5 @@ __pycache__/
 .DS_Store
 # Anki writes this into installed addon dirs at runtime
 yomitan_postprocess/meta.json
+# Yomitan dictionary exports are huge (~200 MB) and redownloadable; keep local-only
+yomitan_settings/yomitan-dictionaries-*.json
