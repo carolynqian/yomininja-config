@@ -32,7 +32,9 @@ Yomitan (look up a word, click "send to Anki")
 AnkiConnect (HTTP) → collection.add_note()
   ↓
 [hook fires] yomitan_postprocess addon
-  ├─ `say -v Tingting` → afconvert → m4a → Sentence Audio
+  ├─ edge-tts neural voice (or `say` offline) → Sentence Audio
+  ├─ same for Word Audio, only if Yomitan's Forvo lookup found nothing
+  ├─ deep-translator (Google) → Sentence Translation
   └─ shells out to yomitan_stylized_migaku.py --text "..."
        └─ jieba.posseg + pypinyin → 汉[pinyin;pos] format → Sentence
        └─ raw text → Plain Sentence
@@ -46,7 +48,8 @@ Anki saves the fully-populated note
 |---|---|---|
 | `Sentence` | `我打开了收音机` | `我[wo3;r]打开[da3 kai1;v]了[le5;ul]<t>收音机[shou1 yin1 ji1;n]</t>` |
 | `Plain Sentence` | *(empty)* | `我打开了收音机` |
-| `Sentence Audio` | *(empty)* | `[sound:yomitan_pp_abc123.m4a]` |
+| `Sentence Audio` | *(empty)* | `[sound:yomitan_pp_abc123.mp3]` |
+| `Sentence Translation` | *(empty)* | `I turned on the radio` |
 
 The bracket-format `Sentence` triggers the Migaku JS in the card template to
 render hover-pinyin tooltips on every word during review.
@@ -56,7 +59,7 @@ render hover-pinyin tooltips on every word during review.
 | Path | Role |
 |---|---|
 | `yomitan_stylized_migaku.py` | Converts raw Chinese → Migaku `汉[pinyin;pos]` bracket format using jieba + pypinyin. Two modes: CLI (`--text`) for live use by the addon, AnkiConnect backfill (no args) for existing cards. |
-| `yomitan_postprocess/` | Anki addon. Hooks `anki.hooks.note_will_be_added`, fires on every `[CURRENT] Yomitan` note tagged `yomitan*`. Generates audio with macOS `say -v Tingting` → `afconvert` → m4a, then shells out to the script to bracketize. |
+| `yomitan_postprocess/` | Anki addon. Hooks `anki.hooks.note_will_be_added`, fires on every `[CURRENT] Yomitan` note tagged `yomitan*`. Fills `Sentence Audio` (and `Word Audio` if Yomitan's Forvo lookup came up empty) via edge-tts neural voice, falling back to macOS `say` when offline; fills `Sentence Translation` via deep-translator; then shells out to the script to bracketize. |
 
 ## Prerequisites
 
@@ -65,6 +68,7 @@ render hover-pinyin tooltips on every word during review.
   - **AnkiConnect** (code `2055492159`) — required, lets Yomitan add cards.
   - *Optional:* **HyperTTS** (code `111623432`) for manual audio on one-off cards via the 🔊 editor button.
 - [uv](https://github.com/astral-sh/uv) on `PATH` (or at `~/.local/bin/uv`). The addon shells out to `uv run` so jieba/pypinyin auto-install on first use.
+- For neural-quality audio, install edge-tts once: `uv tool install edge-tts`. (Optional — the addon falls back to the offline macOS `say` voice if edge-tts is missing or there's no network.)
 - [Yomitan](https://yomitan.wiki/) browser extension, configured to send cards via AnkiConnect.
 - A Yomitan-compatible Anki note type **named exactly `[CURRENT] Yomitan`** with these fields: `Sentence`, `Plain Sentence`, `Sentence Audio`, `Target Word`. The template must include the Migaku hover-pinyin JS on the `Sentence` field (the one with `data-reading="hover" data-reading-type="pinyin"`) — the parser is embedded in the template itself.
 - Yomitan configured to tag every card it adds with `yomitan` (or a `yomitan::*` child tag).
@@ -102,7 +106,10 @@ All paths in `yomitan_postprocess/__init__.py`:
 
 - `NOTE_TYPE` — change if your Yomitan note type is named differently.
 - `TAG` — change if Yomitan tags cards with something other than `yomitan*`.
-- `VOICE` — any voice from `say -v ?`. Other Mandarin options: `Lilian`, `Sin-ji`.
+- `EDGE_VOICE` — neural voice for online audio. `uv tool run edge-tts -l` lists
+  all; Mandarin options include `zh-CN-YunxiNeural` (male), `zh-CN-YunyangNeural`
+  (news anchor), `zh-CN-XiaoyiNeural` (bright female).
+- `SAY_VOICE` — offline fallback voice, any from `say -v '?'`.
 - `SCRIPT` is auto-resolved relative to the addon directory via the symlink — no change needed if you cloned to `~/GitRepos/yomininja-config/`.
 
 ## Personal backup (not needed to use this project)

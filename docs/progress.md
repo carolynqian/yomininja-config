@@ -4,6 +4,21 @@ Append a new entry at the top each time something material changes.
 
 ---
 
+## 2026-05-20 — Word audio, neural TTS, sentence translation
+
+Expanded what the addon fills in on note add.
+
+- `Word Audio` fallback: generates word TTS from `Target Word` when
+  Yomitan's Forvo lookup found nothing. Refactored the generate→media→
+  field logic into a shared `_attach_audio` helper used for both audio
+  fields; only fires on empty fields so Forvo recordings still win.
+- Neural TTS: audio now uses edge-tts (`zh-CN-XiaoxiaoNeural`) when
+  online, falling back to macOS `say` (`Tingting`) offline or on any
+  failure. Replaces the robotic compact `say` voice as the default.
+- `Sentence Translation`: new `_translate` step fills the field via
+  deep-translator's Google backend (free, no API key). Text piped over
+  stdin to avoid shell-quoting issues; fails silently to blank if offline.
+
 ## 2026-05-18 — Public release prep
 
 Cleaned up the repo so it can be flipped to public.
